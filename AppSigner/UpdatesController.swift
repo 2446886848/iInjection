@@ -57,7 +57,7 @@ class UpdatesController: NSWindowController {
                                     DispatchQueue.main.async {
                                         // update some UI
                                         if updatesWindow == nil {
-                                            updatesWindow = UpdatesController(windowNibName: "Updates")
+                                            updatesWindow = UpdatesController(windowNibName: NSNib.Name(rawValue: "Updates"))
                                         }
                                         updatesWindow!.showWindow([currentVersion,releases])
                                     }
@@ -96,7 +96,7 @@ class UpdatesController: NSWindowController {
     }
     override func showWindow(_ sender: Any?) {
         super.showWindow(sender)
-        appIcon.image = NSWorkspace.shared().icon(forFile: Bundle.main.bundlePath)
+        appIcon.image = NSWorkspace.shared.icon(forFile: Bundle.main.bundlePath)
         var releaseOutput: [String] = []
         if let senderArray = sender as? [AnyObject] {
             if let releases = senderArray[1] as? [[String: AnyObject]],
@@ -135,7 +135,7 @@ class UpdatesController: NSWindowController {
         updateWindow.close()
     }
     @IBAction func visitProjectPage(_ sender: NSButton) {
-        NSWorkspace.shared().open(URL(string: "http://dantheman827.github.io/ios-app-signer/")!)
+        NSWorkspace.shared.open(URL(string: "http://dantheman827.github.io/ios-app-signer/")!)
         updateWindow.close()
     }
 }

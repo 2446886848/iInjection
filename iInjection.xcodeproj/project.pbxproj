@@ -218,6 +218,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -363,12 +364,12 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = AppSigner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.DanTheMan827.AppSigner;
 				PRODUCT_NAME = iInjection;
 				SWIFT_OBJC_BRIDGING_HEADER = "iOS App Signer-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -380,11 +381,11 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = AppSigner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.DanTheMan827.AppSigner;
 				PRODUCT_NAME = iInjection;
 				SWIFT_OBJC_BRIDGING_HEADER = "iOS App Signer-Bridging-Header.h";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};

@@ -99,7 +99,7 @@ class MainView: NSView, URLSessionDataDelegate, URLSessionDelegate, URLSessionDo
     
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
         let pasteboard = sender.draggingPasteboard()
-        if let board = pasteboard.propertyList(forType: "NSFilenamesPboardType") as? NSArray {
+        if let board = pasteboard.propertyList(forType: NSPasteboard.PasteboardType(rawValue: "NSFilenamesPboardType")) as? NSArray {
             if let filePath = board[0] as? String {
                 
                 fileDropped(filePath)
@@ -107,7 +107,8 @@ class MainView: NSView, URLSessionDataDelegate, URLSessionDelegate, URLSessionDo
             }
         }
         if let types = pasteboard.types {
-            if types.contains(NSURLPboardType) {
+//            if types.contains(NSURLPboardType) {
+            if types.contains(NSPasteboard.PasteboardType.URL) {
                 if let url = NSURL(from: pasteboard) {
                     urlDropped(url)
                 }
@@ -117,12 +118,12 @@ class MainView: NSView, URLSessionDataDelegate, URLSessionDelegate, URLSessionDo
     }
     
     func checkExtension(_ drag: NSDraggingInfo) -> Bool {
-        if let board = drag.draggingPasteboard().propertyList(forType: "NSFilenamesPboardType") as? NSArray,
+        if let board = drag.draggingPasteboard().propertyList(forType: NSPasteboard.PasteboardType(rawValue: "NSFilenamesPboardType")) as? NSArray,
             let path = board[0] as? String {
                 return self.fileTypes.contains(path.pathExtension.lowercased())
         }
         if let types = drag.draggingPasteboard().types {
-            if types.contains(NSURLPboardType) {
+            if types.contains(NSPasteboard.PasteboardType.URL) {
                 if let url = NSURL(from: drag.draggingPasteboard()),
                     let suffix = url.pathExtension {
                         return self.urlFileTypes.contains(suffix.lowercased())
@@ -136,11 +137,13 @@ class MainView: NSView, URLSessionDataDelegate, URLSessionDelegate, URLSessionDo
     
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
-        register(forDraggedTypes: [NSFilenamesPboardType, NSURLPboardType])
+        registerForDraggedTypes([NSPasteboard.PasteboardType.URL, NSPasteboard.PasteboardType.fileURL])
+//        register(forDraggedTypes: [NSFilenamesPboardType, NSURLPboardType])
     }
     required init?(coder: NSCoder) {
         super.init(coder: coder)
-        register(forDraggedTypes: [NSFilenamesPboardType, NSURLPboardType])
+        registerForDraggedTypes([NSPasteboard.PasteboardType.URL, NSPasteboard.PasteboardType.fileURL])
+//        register(forDraggedTypes: [NSFilenamesPboardType, NSURLPboardType])
     }
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -167,7 +170,7 @@ class MainView: NSView, URLSessionDataDelegate, URLSessionDelegate, URLSessionDo
                     alert.runModal()
                 }
                 
-                NSApplication.shared().terminate(self)
+                NSApplication.shared.terminate(self)
             }
             UpdatesController.checkForUpdate()
         }
@@ -270,7 +273,7 @@ class MainView: NSView, URLSessionDataDelegate, URLSessionDelegate, URLSessionDo
         alert.informativeText = "I can attempt to fix this automatically, would you like me to try?"
         alert.addButton(withTitle: "Yes")
         alert.addButton(withTitle: "No")
-        if alert.runModal() == NSAlertFirstButtonReturn {
+        if alert.runModal() == NSApplication.ModalResponse.alertFirstButtonReturn {
             if let tempFolder = makeTempFolder() {
                 iASShared.fixSigning(tempFolder)
                 try? fileManager.removeItem(atPath: tempFolder)
@@ -307,7 +310,7 @@ class MainView: NSView, URLSessionDataDelegate, URLSessionDelegate, URLSessionDo
             if profile.appID.characters.index(of: "*") == nil {
                 // Not a wildcard profile
                 NewApplicationIDTextField.stringValue = profile.appID
-                NewApplicationIDTextField.isEnabled = false
+                NewApplicationIDTextField.isEnabled = true
             } else {
                 // Wildcard profile
                 if NewApplicationIDTextField.isEnabled == false {
@@ -341,7 +344,7 @@ class MainView: NSView, URLSessionDataDelegate, URLSessionDelegate, URLSessionDo
             BrowseButton.isEnabled = false
             ProvisioningProfilesPopup.isEnabled = false
             CodesigningCertsPopup.isEnabled = false
-            NewApplicationIDTextField.isEnabled = false
+            NewApplicationIDTextField.isEnabled = true
             StartButton.isEnabled = false
             appDisplayName.isEnabled = false
         }
@@ -493,7 +496,7 @@ class MainView: NSView, URLSessionDataDelegate, URLSessionDelegate, URLSessionDo
         let saveDialog = NSSavePanel()
         saveDialog.allowedFileTypes = ["ipa"]
         saveDialog.nameFieldStringValue = InputFileText.stringValue.lastPathComponent.stringByDeletingPathExtension
-        if saveDialog.runModal() == NSFileHandlingPanelOKButton {
+        if saveDialog.runModal().rawValue == NSFileHandlingPanelOKButton {
             outputFile = saveDialog.url!.path
             Thread.detachNewThreadSelector(#selector(self.signingThread), toTarget: self, with: nil)
         } else {
@@ -502,7 +505,7 @@ class MainView: NSView, URLSessionDataDelegate, URLSessionDelegate, URLSessionDo
         }
     }
     
-    func signingThread(){
+    @objc func signingThread(){
         
         //MARK: Set up variables
         var warnings = 0
@@ -573,7 +576,7 @@ class MainView: NSView, URLSessionDataDelegate, URLSessionDelegate, URLSessionDo
                     alert.addButton(withTitle: "No")
                     alert.informativeText = "You appear to have a error with your codesigning certificate, do you want me to try and fix the problem?"
                     let response = alert.runModal()
-                    if response == NSAlertFirstButtonReturn {
+                    if response == NSApplication.ModalResponse.alertFirstButtonReturn {
                         iASShared.fixSigning(tempFolder)
                         if self.testSigning(signingCertificate!, tempFolder: tempFolder) == false {
                             let errorAlert = NSAlert()
@@ -837,10 +840,10 @@ class MainView: NSView, URLSessionDataDelegate, URLSessionDelegate, URLSessionDo
                             setStatus("Unable to read entitlements from provisioning profile")
                             warnings += 1
                         }
-                        if profile.appID != "*" && (newApplicationID != "" && newApplicationID != profile.appID) {
-                            setStatus("Unable to change App ID to \(newApplicationID), provisioning profile won't allow it")
-                            cleanup(tempFolder); return
-                        }
+//                        if profile.appID != "*" && (newApplicationID != "" && newApplicationID != profile.appID) {
+//                            setStatus("Unable to change App ID to \(newApplicationID), provisioning profile won't allow it")
+//                            cleanup(tempFolder); return
+//                        }
                     } else {
                         setStatus("Unable to parse provisioning profile, it may be corrupt")
                         warnings += 1
@@ -1146,7 +1149,7 @@ class MainView: NSView, URLSessionDataDelegate, URLSessionDelegate, URLSessionDo
                 break
             
             default:
-                NSApplication.shared().windows[0].makeFirstResponder(self)
+            NSApplication.shared.windows[0].makeFirstResponder(self)
                 startSigning()
         }
     }
@@ -1154,7 +1157,7 @@ class MainView: NSView, URLSessionDataDelegate, URLSessionDelegate, URLSessionDo
     @IBAction func statusLabelClick(_ sender: NSButton) {
         if let outputFile = self.outputFile {
             if fileManager.fileExists(atPath: outputFile) {
-                NSWorkspace.shared().activateFileViewerSelecting([URL(fileURLWithPath: outputFile)])
+                NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: outputFile)])
             }
         }
     }
